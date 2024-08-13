@@ -9,6 +9,10 @@ namespace TabloidCLI.UserInterfaceManagers
 
         public IUserInterfaceManager Execute()
         {
+            Console.WriteLine("Welcome to Tabloid720!");
+
+            Console.WriteLine("----------------------");
+
             Console.WriteLine("Main Menu");
 
             Console.WriteLine(" 1) Journal Management");
@@ -23,7 +27,7 @@ namespace TabloidCLI.UserInterfaceManagers
             string choice = Console.ReadLine();
             switch (choice)
             {
-                case "1": throw new NotImplementedException();
+                case "1": return new JournalManager(this, CONNECTION_STRING);
                 case "2": throw new NotImplementedException();
                 case "3": return new AuthorManager(this, CONNECTION_STRING);
                 case "4": throw new NotImplementedException();
