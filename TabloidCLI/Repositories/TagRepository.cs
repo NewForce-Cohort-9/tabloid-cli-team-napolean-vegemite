@@ -18,7 +18,7 @@ namespace TabloidCLI
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT Id, Name FROM Tag"; //check Tag.cs for property names
+                    cmd.CommandText = @"SELECT Id, Name FROM Tag"; // Check Tag.cs for property names
                     List<Tag> tags = new List<Tag>();
 
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -48,7 +48,7 @@ namespace TabloidCLI
                 {
                     cmd.CommandText = @"SELECT Id, Name
                                          FROM Tag  
-                                         WHERE Id = @id"; //int id
+                                         WHERE Id = @id"; // int id
 
                     cmd.Parameters.AddWithValue("@id", id);
 
@@ -61,7 +61,7 @@ namespace TabloidCLI
 
                         tag = new Tag()
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")), //"Id" from SELECT Id
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")), // "Id" from SELECT Id
                             Name = reader.GetString(reader.GetOrdinal("Name")),
 
                         };
@@ -83,28 +83,29 @@ namespace TabloidCLI
                 {
 
                     // Check if the tag already exists
-                    //WHERE Name = @Name; 
-
+                    // WHERE Name = @Name; 
+                    // THROW must have error state 1
                     cmd.CommandText = @"
                     IF EXISTS (
                     SELECT 1
                     FROM Tag
-                    WHERE Name = @Name; 
+                    WHERE Name = @Name 
                     )
 
                     BEGIN
-                        THROW 50000, 'Tag already exists';
+                        THROW 50000, 'Tag already exists', 1;
                     END
                     ELSE
                     BEGIN
                         INSERT INTO Tag (Name)
                         OUTPUT INSERTED.Id
-                        VALUES(@Name)
+                        VALUES(@Name);
                     END";
+
                     cmd.Parameters.AddWithValue("@Name", tag.Name);
 
                     int id = (int)cmd.ExecuteScalar();
-                    tag.Id = id; 
+                    tag.Id = id;
                 }
             }
         }
@@ -112,7 +113,34 @@ namespace TabloidCLI
 
 
 
- 
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -135,39 +163,48 @@ namespace TabloidCLI
             }
         }
 
+        
         public void Delete(int id)
         {
-            using (SqlConnection conn = Connection)
+            try // Use try catch to display custom error msg in console
             {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
+                using (SqlConnection conn = Connection)
                 {
-                    //IF EXISTS..SELECT 1..UNION to check if the tag is in use in any related tables
-                    // SELECT 1 checks eixstence, if any rows match the condition, dont care about actual data
-                    //THROW >=50000 for custom error messages. 
-                    cmd.CommandText = @"
-                IF EXISTS (
-                SELECT 1 FROM AuthorTag WHERE TagId = @id 
-                UNION
-                SELECT 1 PostTag WHERE TagId = @id 
-                UNION
-                SELECT 1 BlogTag WHERE TagId = @id) 
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                    IF EXISTS (
+                        SELECT 1 FROM AuthorTag WHERE TagId = @id
+                        UNION
+                        SELECT 1 FROM PostTag WHERE TagId = @id
+                        UNION
+                        SELECT 1 FROM BlogTag WHERE TagId = @id
+                    )
+                    BEGIN
+                        THROW 50000, 'Cannot delete tag because it is in use.', 1;
+                    END
+                    ELSE
+                    BEGIN
+                        DELETE FROM Tag WHERE Id = @id;
+                    END";
 
-                BEGIN
-                    THROW 50000, 'Cannot delete tag because it is in use';
-                END
-                ELSE
-                BEGIN
-                    DELETE FROM Tag WHERE Id = @id;
-                END";
-                    cmd.Parameters.AddWithValue("@id", id);
-                    cmd.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
             }
+            catch (SqlException ex) //Case of Tag exists (TagId = @id) in AuthorTag, PostTag or BLogTag
+            {
+                // Handle specific SQL error for tag in use
+                if (ex.Number == 50000)
+                {
+                    Console.WriteLine(ex.Message); // 'Cannot delete tag because it is in use.' will dipslay
+                }
+             
+            }
+            
         }
-
-
-
 
         public SearchResults<Author> SearchAuthors(string tagName)
         {
@@ -207,51 +244,6 @@ namespace TabloidCLI
             }
         }
 
-        //public SearchResults<Tag> SearchTags(string tagName)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            //t.Id AS TagId,
-        //            //                           t.Name,
-        //            //                        at.TagId AS AuthorTagId,
-        //            //                        at.AuthorId AS AuthorId,
-        //            //                        pt.TagId AS PostTagId,
-        //            //                        pt.PostId AS PostId,
-        //            //                        bt.TagId AS BlogTagId
-        //            //                        bt.BlogId AS BlogId,
-
-        //            //                     FROM Tag t 
-        //            //                     LEFT JOIN AuthorTag at ON t.Id = at.TagId
-        //            //                     LEFT JOIN PostTag pt ON t.Id = pt.TagId
-        //            //                     LEFT JOIN BlogTag bt ON t.Id = bt.TagId
-        //            //                     WHERE a.id = @id";
-        //            cmd.CommandText = @"SELECT Id, Name
-        //                            FROM Tag
-        //                            WHERE Name LIKE @name";
-
-        //            cmd.Parameters.AddWithValue("@name", $"%{tagName}%");
-        //            SqlDataReader reader = cmd.ExecuteReader();
-
-        //            SearchResults<Tag> results = new SearchResults<Tag>();
-        //            while (reader.Read())
-        //            {
-        //                Tag tag = new Tag()
-        //                {
-        //                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-        //                    Name = reader.GetString(reader.GetOrdinal("Name")),
-
-        //                };
-        //                results.Add(tag);
-        //            }
-
-        //            reader.Close();
-
-        //            return results;
-        //        }
-        //    }
-        //}
+      
     }
 }
