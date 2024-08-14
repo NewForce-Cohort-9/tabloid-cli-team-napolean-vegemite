@@ -18,7 +18,7 @@ namespace TabloidCLI
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT id, Name FROM Tag";
+                    cmd.CommandText = @"SELECT Id, Name FROM Tag"; // Check Tag.cs for property names
                     List<Tag> tags = new List<Tag>();
 
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -41,22 +41,169 @@ namespace TabloidCLI
 
         public Tag Get(int id)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, Name
+                                         FROM Tag  
+                                         WHERE Id = @id"; // int id
+
+                    cmd.Parameters.AddWithValue("@id", id);
+
+                    Tag tag = null;
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+
+                        tag = new Tag()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")), // "Id" from SELECT Id
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+
+                        };
+                    }
+
+                    reader.Close();
+
+                    return tag;
+                }
+            }
         }
 
         public void Insert(Tag tag)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+
+                    // Check if the tag already exists
+                    // WHERE Name = @Name; 
+                    // THROW must have error state 1
+                    cmd.CommandText = @"
+                    IF EXISTS (
+                    SELECT 1
+                    FROM Tag
+                    WHERE Name = @Name 
+                    )
+
+                    BEGIN
+                        THROW 50000, 'Tag already exists', 1;
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Tag (Name)
+                        OUTPUT INSERTED.Id
+                        VALUES(@Name);
+                    END";
+
+                    cmd.Parameters.AddWithValue("@Name", tag.Name);
+
+                    int id = (int)cmd.ExecuteScalar();
+                    tag.Id = id;
+                }
+            }
         }
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         public void Update(Tag tag)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"UPDATE Tag 
+                                           SET Name = @Name 
+                                         WHERE Id = @Id";
+
+                    cmd.Parameters.AddWithValue("@Name", tag.Name);
+                    cmd.Parameters.AddWithValue("@Id", tag.Id);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
+        
         public void Delete(int id)
         {
-            throw new NotImplementedException();
+            try // Use try catch to display custom error msg in console
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                    IF EXISTS (
+                        SELECT 1 FROM AuthorTag WHERE TagId = @id
+                        UNION
+                        SELECT 1 FROM PostTag WHERE TagId = @id
+                        UNION
+                        SELECT 1 FROM BlogTag WHERE TagId = @id
+                    )
+                    BEGIN
+                        THROW 50000, 'Cannot delete tag because it is in use.', 1;
+                    END
+                    ELSE
+                    BEGIN
+                        DELETE FROM Tag WHERE Id = @id;
+                    END";
+
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SqlException ex) //Case of Tag exists (TagId = @id) in AuthorTag, PostTag or BLogTag
+            {
+                // Handle specific SQL error for tag in use
+                if (ex.Number == 50000)
+                {
+                    Console.WriteLine(ex.Message); // 'Cannot delete tag because it is in use.' will dipslay
+                }
+             
+            }
+            
         }
 
         public SearchResults<Author> SearchAuthors(string tagName)
@@ -96,5 +243,7 @@ namespace TabloidCLI
                 }
             }
         }
+
+      
     }
 }
