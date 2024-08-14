@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace TabloidCLI.UserInterfaceManagers
                     Remove();
                     return this;
                 case 4:
-                    Console.WriteLine("Not there yet");
+                    Edit();
                     return this;
                 case 0:
                     return _parentUI;
@@ -98,6 +99,32 @@ namespace TabloidCLI.UserInterfaceManagers
                 Console.WriteLine("Invalid Selection");
                 return null;
             }
+        }
+
+        private void Edit()
+        {
+            Journal journalToEdit = Choose("Which journal would you like to edit?");
+            if (journalToEdit == null)
+            {
+                return;
+            }
+
+            Console.WriteLine();
+            Console.Write("New title (blank to leave unchanged: ");
+            string title = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                journalToEdit.Title = title;
+            }
+
+            Console.Write("New content (blank to leave unchanged: ");
+            string content = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                journalToEdit.Content = content;
+            }
+
+            _journalRepository.Update(journalToEdit);
         }
 
         private void List()
