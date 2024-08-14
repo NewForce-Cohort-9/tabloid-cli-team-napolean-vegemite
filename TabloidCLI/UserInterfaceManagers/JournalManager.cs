@@ -34,7 +34,7 @@ namespace TabloidCLI.UserInterfaceManagers
             switch (choice)
             {
                 case 1:
-                    Console.WriteLine("Not there yet");
+                    List();
                     return this;
                 case 2:
                     Add();
@@ -53,7 +53,7 @@ namespace TabloidCLI.UserInterfaceManagers
             }
         }
 
-        public void Add()
+        private void Add()
         {
             Console.WriteLine("New Journal Entry");
             Journal journal = new Journal();
@@ -67,6 +67,16 @@ namespace TabloidCLI.UserInterfaceManagers
             journal.CreateDateTime = DateTime.Now;
 
             _journalRepository.Insert(journal);
+        }
+
+        private void List()
+        {
+            List<Journal> journals = _journalRepository.GetAll();
+            foreach (Journal journal in journals)
+            {
+                Console.WriteLine($"{journal.Title} - Created On: {journal.CreateDateTime} - {journal.Content}");
+            }
+
         }
     }
 }
