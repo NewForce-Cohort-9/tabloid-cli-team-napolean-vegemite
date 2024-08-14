@@ -13,22 +13,18 @@ namespace TabloidCLI
     {
         public JournalRepository(string connectionString) : base(connectionString) { }
 
-        public void Insert(Journal journal)
+        public void Delete(int id)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"INSERT INTO Journal (Title, Content, CreateDateTime)
-                                        VALUES (@title, @content, @createDateTime)";
-                    cmd.Parameters.AddWithValue("@title", journal.Title);
-                    cmd.Parameters.AddWithValue("@content", journal.Content);
-                    cmd.Parameters.AddWithValue("@createDateTime", journal.CreateDateTime);
+                    cmd.CommandText = @"DELETE FROM Journal WHERE Id = @id";
+                    cmd.Parameters.AddWithValue("@id", id);
 
                     cmd.ExecuteNonQuery();
                 }
-
             }
         }
 
@@ -62,6 +58,25 @@ namespace TabloidCLI
 
                     return journals;
                 }
+            }
+        }
+
+        public void Insert(Journal journal)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"INSERT INTO Journal (Title, Content, CreateDateTime)
+                                        VALUES (@title, @content, @createDateTime)";
+                    cmd.Parameters.AddWithValue("@title", journal.Title);
+                    cmd.Parameters.AddWithValue("@content", journal.Content);
+                    cmd.Parameters.AddWithValue("@createDateTime", journal.CreateDateTime);
+
+                    cmd.ExecuteNonQuery();
+                }
+
             }
         }
     }

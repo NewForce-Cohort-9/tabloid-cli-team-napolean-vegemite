@@ -40,7 +40,7 @@ namespace TabloidCLI.UserInterfaceManagers
                     Add();
                     return this;
                 case 3:
-                    Console.WriteLine("Not there yet");
+                    Remove();
                     return this;
                 case 4:
                     Console.WriteLine("Not there yet");
@@ -69,6 +69,37 @@ namespace TabloidCLI.UserInterfaceManagers
             _journalRepository.Insert(journal);
         }
 
+        private Journal Choose(string prompt = null)
+        {
+            if (prompt == null)
+            {
+                prompt = "Please choose a Journal Entry:";
+            }
+            Console.WriteLine(prompt);
+
+            List<Journal> journals = _journalRepository.GetAll();
+
+            for (int i = 0; i < journals.Count; i++)
+            {
+                Journal journal = journals[i];
+                Console.WriteLine($"{i + 1} - {journal.Title} - Created on {journal.CreateDateTime} - {journal.Content}");
+            }
+
+            Console.Write("> ");
+
+            string input = Console.ReadLine();
+            try
+            {
+                int choice = int.Parse(input);
+                return journals[choice - 1];
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Invalid Selection");
+                return null;
+            }
+        }
+
         private void List()
         {
             List<Journal> journals = _journalRepository.GetAll();
@@ -77,6 +108,15 @@ namespace TabloidCLI.UserInterfaceManagers
                 Console.WriteLine($"{journal.Title} - Created On: {journal.CreateDateTime} - {journal.Content}");
             }
 
+        }
+
+        private void Remove()
+        {
+            Journal journalToDelete = Choose("Which journal entry would you like to remove?");
+            if (journalToDelete != null)
+            {
+                _journalRepository.Delete(journalToDelete.Id);
+            }
         }
     }
 }
