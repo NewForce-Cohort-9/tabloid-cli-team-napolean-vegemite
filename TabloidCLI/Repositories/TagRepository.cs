@@ -18,7 +18,7 @@ namespace TabloidCLI
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT id, Name FROM Tag";
+                    cmd.CommandText = @"SELECT Id, Name FROM Tag"; //check Tag.cs for property names
                     List<Tag> tags = new List<Tag>();
 
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -46,42 +46,25 @@ namespace TabloidCLI
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT a.Id AS AuthorId,
-                                               a.FirstName,
-                                               a.LastName,
-                                               a.Bio,
-                                               t.Id AS TagId,
-                                               t.Name
-                                          FROM Tag t 
-                                               LEFT JOIN AuthorTag at on a.Id = at.AuthorId
-                                               LEFT JOIN Tag t on t.Id = at.TagId
-                                         WHERE a.id = @id";
+                    cmd.CommandText = @"SELECT Id, Name
+                                         FROM Tag  
+                                         WHERE Id = @id"; //int id
 
                     cmd.Parameters.AddWithValue("@id", id);
 
                     Tag tag = null;
 
                     SqlDataReader reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        if (tag == null)
-                        {
-                            tag = new Tag()
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("TagId")),
-                                Name = reader.GetString(reader.GetOrdinal("Name")),
-                                
-                            };
-                        }
 
-                        if (!reader.IsDBNull(reader.GetOrdinal("TagId")))
+                    if (reader.Read())
+                    {
+
+                        tag = new Tag()
                         {
-                            tag.Add(new Tag()
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("TagId")),
-                                Name = reader.GetString(reader.GetOrdinal("Name")),
-                            });
-                        }
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")), //"Id" from SELECT Id
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+
+                        };
                     }
 
                     reader.Close();
@@ -93,12 +76,50 @@ namespace TabloidCLI
 
         public void Insert(Tag tag)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+
+                    // Check if the tag already exists
+                    //if (TagExists(tag.Name))
+                    //{
+                    //    throw new InvalidOperationException("A tag with this name already exists.");
+                    //}
+
+
+
+
+                    //Inserts a new row called Name into the Tag table with the @Name parameter's value.
+
+                    cmd.CommandText = @"INSERT INTO Tag (Name)
+                                                    VALUES (@Name)";
+                    cmd.Parameters.AddWithValue("@Name",tag.Name);
+             
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         public void Update(Tag tag)
         {
-            throw new NotImplementedException();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"UPDATE Tag 
+                                           SET Name = @Name 
+                                         WHERE Id = @Id";
+
+                    cmd.Parameters.AddWithValue("@Name", tag.Name);
+                    cmd.Parameters.AddWithValue("@Id", tag.Id);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         public void Delete(int id)
@@ -106,35 +127,49 @@ namespace TabloidCLI
             throw new NotImplementedException();
         }
 
-        public SearchResults<Author> SearchAuthors(string tagName)
+
+
+
+
+
+        public SearchResults<Tag> SearchTags(string tagName)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT a.id,
-                                               a.FirstName,
-                                               a.LastName,
-                                               a.Bio
-                                          FROM Author a
-                                               LEFT JOIN AuthorTag at on a.Id = at.AuthorId
-                                               LEFT JOIN Tag t on t.Id = at.TagId
-                                         WHERE t.Name LIKE @name";
+                    //t.Id AS TagId,
+                    //                           t.Name,
+                    //                        at.TagId AS AuthorTagId,
+                    //                        at.AuthorId AS AuthorId,
+                    //                        pt.TagId AS PostTagId,
+                    //                        pt.PostId AS PostId,
+                    //                        bt.TagId AS BlogTagId
+                    //                        bt.BlogId AS BlogId,
+
+                    //                     FROM Tag t 
+                    //                     LEFT JOIN AuthorTag at ON t.Id = at.TagId
+                    //                     LEFT JOIN PostTag pt ON t.Id = pt.TagId
+                    //                     LEFT JOIN BlogTag bt ON t.Id = bt.TagId
+                    //                     WHERE a.id = @id";
+                    cmd.CommandText = @"SELECT Id, Name
+                                    FROM Tag
+                                    WHERE Name LIKE @name";
+                    
                     cmd.Parameters.AddWithValue("@name", $"%{tagName}%");
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    SearchResults<Author> results = new SearchResults<Author>();
+                    SearchResults<Tag> results = new SearchResults<Tag>();
                     while (reader.Read())
                     {
-                        Author author = new Author()
+                        Tag tag = new Tag()
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            Bio = reader.GetString(reader.GetOrdinal("Bio")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            
                         };
-                        results.Add(author);
+                        results.Add(tag);
                     }
 
                     reader.Close();
