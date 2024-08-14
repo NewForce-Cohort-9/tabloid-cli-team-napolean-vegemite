@@ -72,9 +72,13 @@ namespace TabloidCLI.UserInterfaceManagers
         private void ViewBlogPosts()
         {
             List<Post> posts = _postRepository.GetByAuthor(_authorId);
+            if (posts.Count == 0)
+            {
+                Console.WriteLine("No posts submitted yet.");
+            }
             foreach (Post post in posts)
             {
-                Console.WriteLine(post);
+                Console.WriteLine($"{post.Title} - {post.Url}");
             }
             Console.WriteLine();
         }

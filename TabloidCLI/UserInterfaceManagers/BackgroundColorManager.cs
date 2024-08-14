@@ -31,23 +31,6 @@ namespace TabloidCLI.UserInterfaceManagers
             }
             Console.WriteLine(" 0) Go Back");
 
-            //Console.WriteLine(" 0) Black");
-            //Console.WriteLine(" 1) Dark Blue");
-            //Console.WriteLine(" 2) Dark Green");
-            //Console.WriteLine(" 3) Dark Cyan");
-            //Console.WriteLine(" 4) Dark Red");
-            //Console.WriteLine(" 5) Dark Magenta");
-            //Console.WriteLine(" 6) Dark Yellow");
-            //Console.WriteLine(" 7) Gray");
-            //Console.WriteLine(" 8) Dark Gray");
-            //Console.WriteLine(" 9) Blue");
-            //Console.WriteLine(" 10) Green");
-            //Console.WriteLine(" 11) Cyan");
-            //Console.WriteLine(" 12) Red");
-            //Console.WriteLine(" 13) Magenta");
-            //Console.WriteLine(" 14) Yellow");
-            //Console.WriteLine(" 15) White");
-
             Console.Write("> ");
             string choice = Console.ReadLine();
             if (choice == "0")
