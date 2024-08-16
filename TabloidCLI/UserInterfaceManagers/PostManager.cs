@@ -13,12 +13,14 @@ namespace TabloidCLI.UserInterfaceManagers
     {
         private readonly IUserInterfaceManager _parentUI;
         private PostRepository _postRepository;
+        private BlogRepository _blogRepository;
         private string _connectionString;
 
         public PostManager(IUserInterfaceManager parentUI, string connectionString)
         {
             _parentUI = parentUI;
             _postRepository = new PostRepository(connectionString);
+            _blogRepository = new BlogRepository(connectionString);
             _connectionString = connectionString;
         }
 
@@ -162,7 +164,24 @@ namespace TabloidCLI.UserInterfaceManagers
 
         private Blog ChooseBlog()
         {
-            return new Blog { Title = "Default Blog" };
+            Console.WriteLine("Select a blog:");
+            List<Blog> blogs = _blogRepository.GetAll();
+            if (blogs.Count > 0)
+            {
+                for (int i = 0; i < blogs.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}: {blogs[i].Title} ({blogs[i].Url})");
+                }
+                Console.Write("Select blog (enter number): ");
+                int choice = Convert.ToInt32(Console.ReadLine()) - 1;
+                return blogs[choice];
+            }
+            else
+            {
+                Console.WriteLine("No blogs available to select.");
+                return null;  // Handle this case appropriately in calling method
+            }
         }
+
     }
 }

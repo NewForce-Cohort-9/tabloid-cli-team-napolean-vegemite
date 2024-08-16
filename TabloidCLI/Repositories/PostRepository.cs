@@ -189,15 +189,16 @@ namespace TabloidCLI.Repositories
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"INSERT INTO Post (Title, Url, PublishDateTime)
-                                        VALUES (@title, @url, @publishDateTime)";
+                    cmd.CommandText = @"INSERT INTO Post (Title, Url, PublishDateTime, AuthorId, BlogId)
+                                VALUES (@title, @url, @publishDateTime, @authorId, @blogId)";
                     cmd.Parameters.AddWithValue("@title", post.Title);
                     cmd.Parameters.AddWithValue("@url", post.Url);
                     cmd.Parameters.AddWithValue("@publishDateTime", post.PublishDateTime);
+                    cmd.Parameters.AddWithValue("@authorId", post.Author.Id);  // Ensure Author is properly selected similar to Blog
+                    cmd.Parameters.AddWithValue("@blogId", post.Blog.Id);     // Make sure this value is not null
 
                     cmd.ExecuteNonQuery();
                 }
-
             }
         }
 
@@ -209,18 +210,24 @@ namespace TabloidCLI.Repositories
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"UPDATE Post
-                                        SET Title = @title, Url = @url, PublishDateTime @publishdatetime, Author = @author, Blog = @blog 
-                                        WHERE Id = @id";
+                                SET Title = @title, 
+                                    Url = @url, 
+                                    PublishDateTime = @publishdatetime, 
+                                    AuthorId = @authorId, 
+                                    BlogId = @blogId 
+                                WHERE Id = @id";
                     cmd.Parameters.AddWithValue("@title", post.Title);
                     cmd.Parameters.AddWithValue("@url", post.Url);
                     cmd.Parameters.AddWithValue("@publishdatetime", post.PublishDateTime);
-                    cmd.Parameters.AddWithValue("@author", post.Author);
-                    cmd.Parameters.AddWithValue("@blog", post.Blog);
+                    cmd.Parameters.AddWithValue("@authorId", post.Author.Id); // Assuming Author is not null
+                    cmd.Parameters.AddWithValue("@blogId", post.Blog.Id); // Assuming Blog is not null
+                    cmd.Parameters.AddWithValue("@id", post.Id);
 
                     cmd.ExecuteNonQuery();
                 }
             }
         }
+
 
         public void Delete(int id)
         {
