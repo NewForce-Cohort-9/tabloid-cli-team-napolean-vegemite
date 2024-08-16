@@ -14,6 +14,7 @@ namespace TabloidCLI.UserInterfaceManagers
         private readonly IUserInterfaceManager _parentUI;
         private PostRepository _postRepository;
         private BlogRepository _blogRepository;
+        private AuthorRepository _authorRepository;
         private string _connectionString;
 
         public PostManager(IUserInterfaceManager parentUI, string connectionString)
@@ -21,6 +22,7 @@ namespace TabloidCLI.UserInterfaceManagers
             _parentUI = parentUI;
             _postRepository = new PostRepository(connectionString);
             _blogRepository = new BlogRepository(connectionString);
+            _authorRepository = new AuthorRepository(connectionString);
             _connectionString = connectionString;
         }
 
@@ -159,8 +161,25 @@ namespace TabloidCLI.UserInterfaceManagers
 
         private Author ChooseAuthor()
         {
-            return new Author { FirstName = "Default", LastName = "Author" };
+            Console.WriteLine("Select an author:");
+            List<Author> authors = _authorRepository.GetAll(); 
+            if (authors.Count > 0)
+            {
+                for (int i = 0; i < authors.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}: {authors[i].FirstName} {authors[i].LastName}");
+                }
+                Console.Write("Select author (enter number): ");
+                int choice = Convert.ToInt32(Console.ReadLine()) - 1; 
+                return authors[choice]; 
+            }
+            else
+            {
+                Console.WriteLine("No authors available to select.");
+                return null;  
+            }
         }
+
 
         private Blog ChooseBlog()
         {
@@ -179,7 +198,7 @@ namespace TabloidCLI.UserInterfaceManagers
             else
             {
                 Console.WriteLine("No blogs available to select.");
-                return null;  // Handle this case appropriately in calling method
+                return null;  
             }
         }
 

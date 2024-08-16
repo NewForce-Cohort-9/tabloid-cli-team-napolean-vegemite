@@ -194,8 +194,8 @@ namespace TabloidCLI.Repositories
                     cmd.Parameters.AddWithValue("@title", post.Title);
                     cmd.Parameters.AddWithValue("@url", post.Url);
                     cmd.Parameters.AddWithValue("@publishDateTime", post.PublishDateTime);
-                    cmd.Parameters.AddWithValue("@authorId", post.Author.Id);  // Ensure Author is properly selected similar to Blog
-                    cmd.Parameters.AddWithValue("@blogId", post.Blog.Id);     // Make sure this value is not null
+                    cmd.Parameters.AddWithValue("@authorId", post.Author.Id);  
+                    cmd.Parameters.AddWithValue("@blogId", post.Blog.Id);     
 
                     cmd.ExecuteNonQuery();
                 }
@@ -219,8 +219,8 @@ namespace TabloidCLI.Repositories
                     cmd.Parameters.AddWithValue("@title", post.Title);
                     cmd.Parameters.AddWithValue("@url", post.Url);
                     cmd.Parameters.AddWithValue("@publishdatetime", post.PublishDateTime);
-                    cmd.Parameters.AddWithValue("@authorId", post.Author.Id); // Assuming Author is not null
-                    cmd.Parameters.AddWithValue("@blogId", post.Blog.Id); // Assuming Blog is not null
+                    cmd.Parameters.AddWithValue("@authorId", post.Author.Id); 
+                    cmd.Parameters.AddWithValue("@blogId", post.Blog.Id); 
                     cmd.Parameters.AddWithValue("@id", post.Id);
 
                     cmd.ExecuteNonQuery();
