@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata;
 using TabloidCLI.Models;
 
 namespace TabloidCLI.UserInterfaceManagers
@@ -56,13 +57,14 @@ namespace TabloidCLI.UserInterfaceManagers
 
             if (results.NoResultsFound)
             {
-                Console.WriteLine($"No results for {tagName}");
+                Console.WriteLine($"No results for {tagName} in Authors.");
             }
             else
             {
-                results.Display();
+                results.Display("Authors:");
             }
         }
+
 
         private void SearchPosts()
         {
@@ -73,11 +75,11 @@ namespace TabloidCLI.UserInterfaceManagers
 
             if (results.NoResultsFound)
             {
-                Console.WriteLine($"No results for {tagName}");
+                Console.WriteLine($"No results for {tagName} in Posts.");
             }
             else
             {
-                results.Display();
+                results.Display("Posts:");
             }
         }
 
@@ -90,11 +92,11 @@ namespace TabloidCLI.UserInterfaceManagers
 
             if (results.NoResultsFound)
             {
-                Console.WriteLine($"No results for {tagName}");
+                Console.WriteLine($"No results for {tagName} in Blogs.");
             }
             else
             {
-                results.Display();
+                results.Display("Blogs:");
             }
         }
 
@@ -103,23 +105,30 @@ namespace TabloidCLI.UserInterfaceManagers
             Console.Write("Tag> ");
             string tagName = Console.ReadLine();
 
+            // Perform searches
             SearchResults<Blog> blogResults = _tagRepository.SearchBlogs(tagName);
-
             SearchResults<Post> postResults = _tagRepository.SearchPosts(tagName);
-
             SearchResults<Author> authorResults = _tagRepository.SearchAuthors(tagName);
 
-            if (blogResults.NoResultsFound && postResults.NoResultsFound && authorResults.NoResultsFound)
-            {
-                Console.WriteLine($"No results for {tagName}");
-            }
-            else
-            {
-                blogResults.Display();
-                postResults.Display();
-                authorResults.Display();
-            }
+            // Print the title for all results
+            Console.WriteLine("Search Results");
+
+            // Display Blogs section
+            blogResults.Display("Blogs:");
+
+            // Display Posts section
+            postResults.Display("Posts:");
+
+            // Display Authors section
+            authorResults.Display("Authors:");
         }
+
+
+
 
     }
 }
+
+
+
+
