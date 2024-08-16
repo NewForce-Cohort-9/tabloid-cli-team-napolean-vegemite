@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TabloidCLI.Models;
 
 namespace TabloidCLI.UserInterfaceManagers
 {
@@ -22,16 +23,27 @@ namespace TabloidCLI.UserInterfaceManagers
             _results.Add(result);
         }
 
-        public void Display()
+        public void Display(string sectionTitle = null)
         {
-            Console.WriteLine(Title);
-
-            foreach (T result in _results)
+            if (!string.IsNullOrEmpty(sectionTitle))
             {
-                Console.WriteLine(" " + result);
+                Console.WriteLine(sectionTitle);
+            }
+
+            if (NoResultsFound)
+            {
+                Console.WriteLine($"No results found.");
+            }
+            else
+            {
+                foreach (T result in _results)
+                {
+                    Console.WriteLine(" " + result);
+                }
             }
 
             Console.WriteLine();
         }
     }
 }
+
